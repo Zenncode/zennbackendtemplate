@@ -57,6 +57,30 @@ Fix options:
 - Run MongoDB container from the project folder: `docker compose up -d mongo`
 - Use MongoDB Atlas and replace `MONGODB_URI` in `.env`
 
+### MongoDB Atlas Setup (Step-by-Step)
+
+1. Create an Atlas project.
+2. Create a cluster (M0/free is enough for local development).
+3. Create a database user with username/password.
+4. Add your client IP in Network Access.
+5. Copy the connection string from Connect -> Drivers.
+6. Update `.env`:
+
+```env
+MONGODB_URI=mongodb+srv://<db-user>:<db-password>@<cluster-url>/zenntechinc?retryWrites=true&w=majority
+```
+
+7. Restart the app:
+
+```bash
+npm run dev
+```
+
+Notes:
+
+- URL-encode password special characters before placing them in URI.
+- Use least-privilege DB user permissions for production.
+
 ## Socket.IO
 
 Socket server runs on the same API host/port.

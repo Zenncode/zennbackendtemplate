@@ -28,11 +28,72 @@ npm install
 npm run build
 ```
 
-Before running `npm run dev`, make sure MongoDB is running (or set `MONGODB_URI` in `.env` to a reachable database).
-Quick local Docker option from the generated project folder:
+## Run the Generated Backend (Step-by-Step)
+
+From the generated project folder:
+
+1. Create `.env` from the example:
+
+```bash
+cp .env.example .env
+```
+
+PowerShell alternative:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+2. Make sure MongoDB is running.
+
+Quick local Docker option:
 
 ```bash
 docker compose up -d mongo
+```
+
+MongoDB Atlas option (cloud):
+
+1. Create an Atlas project and cluster (M0/free is fine for development).
+2. Create a database user (username/password).
+3. Add your IP in Network Access (for dev, you can temporarily allow `0.0.0.0/0`).
+4. In Atlas, open Connect -> Drivers and copy the connection string.
+5. Put the connection string in `.env` as `MONGODB_URI`, for example:
+
+```env
+MONGODB_URI=mongodb+srv://<db-user>:<db-password>@<cluster-url>/zenntechinc?retryWrites=true&w=majority
+```
+
+If your database password has special characters, URL-encode it.
+
+3. Start backend in development:
+
+```bash
+npm run dev
+```
+
+4. Verify it is working:
+
+```bash
+curl http://localhost:3000/
+curl http://localhost:3000/api/health
+```
+
+If MongoDB is not running, startup will fail with connection errors.
+If you use another Mongo host, set `MONGODB_URI` in `.env`.
+
+Optional first admin auto-seed:
+
+```env
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+```
+
+Production run:
+
+```bash
+npm run build
+npm start
 ```
 
 ## Generated Backend Stack
@@ -48,28 +109,3 @@ Each generated backend project includes:
 - Jest + Supertest tests
 - ESLint + Prettier setup
 - Docker Compose (`api`, `mongo`, `redis`)
-
-Template source: `templates/backend`
-
-## Local CLI Usage (This Repo)
-
-```bash
-node ./bin/zenntechinc.js new project-name
-```
-
-## Maintainer Verification
-
-Run this when updating the backend template:
-
-```bash
-cd templates/backend
-npm install
-npm run build
-npm test
-```
-
-## Runtime Notes
-
-- MongoDB is required for app startup.
-- Redis is optional (default in template: `REDIS_ENABLED=false`).
-- Socket server runs on the same host/port as the API.
