@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.env
+assets/uploads/*
+!assets/uploads/.gitkeep
+logs/*
+!logs/.gitkeep
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+_tmp_cli_test*
+.npmrc.authcheck

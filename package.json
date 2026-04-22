@@ -1,0 +1,31 @@
+{
+  "name": "zenntechinc-cli",
+  "version": "1.2.7",
+  "description": "ZENNTECHINC official CLI for bootstrapping backend API projects",
+  "license": "MIT",
+  "bin": {
+    "zenntechinc": "bin/zenntechinc.js"
+  },
+  "files": [
+    "bin",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "dev": "node ./bin/zenntechinc.js",
+    "test:cli": "node ./bin/zenntechinc.js --help"
+  },
+  "keywords": [
+    "zenntechinc",
+    "cli",
+    "template",
+    "backend"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
