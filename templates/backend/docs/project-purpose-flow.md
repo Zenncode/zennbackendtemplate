@@ -7,7 +7,7 @@ This project is a production-ready backend foundation for admin-based systems.
 It provides:
 - Express + TypeScript API
 - Admin JWT auth (login, refresh, logout)
-- MongoDB (required)
+- MongoDB (optional by default; required only when `MONGODB_REQUIRED=true`)
 - Redis cache (optional)
 - Socket.IO realtime support
 - Jest/Supertest tests
@@ -25,9 +25,10 @@ It provides:
 
 1. Startup (`app/server.ts`)
    - Loads `.env`
-   - Connects MongoDB
+   - Tries MongoDB connection
+   - Continues in in-memory sample auth mode when MongoDB is unavailable and `MONGODB_REQUIRED=false`
    - Tries Redis connection (continues if unavailable)
-   - Seeds first admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD` when provided
+   - Seeds first admin from env (`ADMIN_*`/`SAMPLE_ADMIN_*`) depending on active auth mode
    - Starts HTTP server and Socket.IO server
 2. App setup (`app/app.module.ts`)
    - Registers JSON parser and CORS logic
@@ -36,7 +37,7 @@ It provides:
    - Protected routes under `/api/*` use `adminAuthGuard`
    - 404 fallback for unknown routes
 3. Auth request path
-   - Route -> Controller -> DTO validation -> Service -> DB
+   - Route -> Controller -> DTO validation -> Service -> DB or in-memory sample store
    - `POST /api/auth/admin/login`: validates body, checks password, returns access + refresh token
    - `POST /api/auth/admin/refresh`: verifies refresh token, rotates tokens, updates refresh hash
    - `POST /api/auth/admin/logout`: protected route, clears stored refresh token hash

@@ -1,6 +1,7 @@
 Express App:
 - Loads `.env` values at startup.
-- Connects to MongoDB using `MONGODB_URI`.
+- Tries MongoDB connection using `MONGODB_URI`.
+- Continues startup in sample mode when MongoDB is unavailable and `MONGODB_REQUIRED=false`.
 - Registers JSON body parser and CORS middleware.
 - Mounts auth router at `/api/auth/admin`.
 - Applies `adminAuthGuard` middleware to protected `/api/*` routes.
@@ -10,6 +11,7 @@ Auth Router:
 - Public route: `POST /api/auth/admin/refresh`
 - Protected route: `POST /api/auth/admin/logout`
 - Controller validates request body and returns rotated JWT tokens.
-- Service checks admin credentials from `admins` collection.
-- Refresh tokens are hashed in DB and rotated on refresh.
+- Service checks admin credentials from MongoDB (`admins` collection) when connected.
+- If MongoDB is unavailable, service uses in-memory sample admin credentials (`SAMPLE_ADMIN_*`).
+- Refresh tokens are hashed and rotated in the active storage mode (MongoDB or in-memory).
 

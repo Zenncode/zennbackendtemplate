@@ -99,6 +99,32 @@ function formatMongoConnectionError(error: unknown, mongoUri: string): string {
   ].join('\n');
 }
 
+function isMongoRequired(): boolean {
+  return (process.env.MONGODB_REQUIRED ?? 'false').toLowerCase() === 'true';
+}
+
+async function connectMongoIfAvailable(): Promise<void> {
+  const mongoUri = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/zenntechinc';
+  const connectTimeoutMs = parsePositiveNumber(process.env.MONGODB_CONNECT_TIMEOUT_MS, 5000);
+
+  try {
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: connectTimeoutMs,
+    });
+    process.stdout.write('MongoDB connected\n');
+  } catch (error) {
+    const formattedError = formatMongoConnectionError(error, mongoUri);
+    if (isMongoRequired()) {
+      throw new Error(formattedError);
+    }
+
+    process.stderr.write(`${formattedError}\n`);
+    process.stderr.write(
+      'MongoDB unavailable, continuing in sample mode. Set MONGODB_REQUIRED=true to fail startup.\n',
+    );
+  }
+}
+
 function isPortAutoFallbackEnabled(): boolean {
   return (process.env.PORT_AUTO_FALLBACK ?? 'true').toLowerCase() !== 'false';
 }
@@ -175,12 +201,7 @@ async function closeHttpServer(): Promise<void> {
 async function bootstrap() {
   loadEnvFile();
 
-  const mongoUri = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/zenntechinc';
-  try {
-    await mongoose.connect(mongoUri);
-  } catch (error) {
-    throw new Error(formatMongoConnectionError(error, mongoUri));
-  }
+  await connectMongoIfAvailable();
   await connectRedis();
   await seedAdminFromEnv();
 

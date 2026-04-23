@@ -25,7 +25,7 @@ function printHelp() {
 zenntechinc CLI
 
 Usage:
-  zenntechinc new <project-name> [--skip-install]
+  zenntechinc new <project-name> [--skip-install|-s]
   zenntechinc --help
   zenntechinc --version
 
@@ -118,11 +118,10 @@ function runInstall(targetDir) {
   });
 
   if (installResult.error || installResult.status !== 0) {
-    console.error('\nDependency installation failed.');
-    if (installResult.error) {
-      console.error(`Reason: ${installResult.error.message}`);
-    }
-    process.exit(installResult.status || 1);
+    const reason = installResult.error
+      ? installResult.error.message
+      : `npm exited with status ${installResult.status}`;
+    throw new Error(`Dependency installation failed. Reason: ${reason}`);
   }
 
   // Keep install resilient in restricted environments, then try prepare non-blocking.
@@ -147,20 +146,51 @@ function createProject(projectName, options) {
   }
 
   const targetDir = path.resolve(process.cwd(), projectName);
+  const targetExists = fs.existsSync(targetDir);
 
-  if (fs.existsSync(targetDir) && fs.readdirSync(targetDir).length > 0) {
-    console.error(`Target folder already exists and is not empty: ${targetDir}`);
-    process.exit(1);
+  if (targetExists) {
+    const targetStats = fs.statSync(targetDir);
+    if (!targetStats.isDirectory()) {
+      console.error(`Target path already exists and is not a directory: ${targetDir}`);
+      process.exit(1);
+    }
+    if (fs.readdirSync(targetDir).length > 0) {
+      console.error(`Target folder already exists and is not empty: ${targetDir}`);
+      process.exit(1);
+    }
+  } else {
+    fs.mkdirSync(targetDir, { recursive: true });
   }
 
-  fs.mkdirSync(targetDir, { recursive: true });
-  copyDirectory(templateRoot, targetDir);
-  updateGeneratedPackageJson(targetDir, projectName);
-  ensureDotEnv(targetDir);
+  try {
+    copyDirectory(templateRoot, targetDir);
+    updateGeneratedPackageJson(targetDir, projectName);
+    ensureDotEnv(targetDir);
 
-  if (!options.skipInstall) {
-    console.log('\nInstalling dependencies...');
-    runInstall(targetDir);
+    if (!options.skipInstall) {
+      console.log('\nInstalling dependencies...');
+      runInstall(targetDir);
+    }
+  } catch (error) {
+    if (!targetExists) {
+      try {
+        fs.rmSync(targetDir, { recursive: true, force: true });
+      } catch (cleanupError) {
+        console.warn(
+          `\nFailed to clean up partially created directory: ${targetDir}`,
+        );
+        if (cleanupError instanceof Error) {
+          console.warn(`Cleanup reason: ${cleanupError.message}`);
+        }
+      }
+    }
+
+    if (error instanceof Error) {
+      console.error(`\nProject creation failed: ${error.message}`);
+    } else {
+      console.error('\nProject creation failed due to an unknown error.');
+    }
+    process.exit(1);
   }
 
   console.log(`\nProject created: ${projectName}`);
@@ -171,8 +201,10 @@ function createProject(projectName, options) {
     console.log('  npm install');
   }
   console.log('  # Ensure MongoDB is running or update MONGODB_URI in .env');
-  console.log('  # Example with Docker: docker compose up -d mongo');
   console.log('  npm run dev');
+  console.log('\nOptional production check:');
+  console.log('  npm run build');
+  console.log('  npm start');
 }
 
 function main() {

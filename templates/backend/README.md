@@ -15,6 +15,68 @@ Backend template using Express.js with MongoDB-based admin authentication and Re
 - Dev tooling: Nodemon + ts-node
 - Containerization: Docker Compose (`api`, `mongo`, `redis`)
 
+## Documentation Map
+
+Use these files as the source of truth when understanding or updating backend flow:
+
+- `docs/project-purpose-flow.md`: architecture overview and runtime flow
+- `docs/endpoints.md`: endpoint inventory and access requirements
+- `docs/modules-note.txt`: concise module behavior notes
+- `.agents/skills/README.md`: ownership and update responsibilities for code areas
+- folder-level `.gitkeep` files: purpose, sample snippet, and flow notes per placeholder folder
+
+Update these docs in the same change whenever endpoint flow, auth behavior, or module responsibilities change.
+
+## Read `.gitkeep` First (Project Flow Guide)
+
+Before adding new files, read the `.gitkeep` inside each placeholder folder.
+Each `.gitkeep` now includes:
+
+- folder purpose
+- sample code/snippet
+- expected flow for that folder
+
+Placeholder folders to check:
+
+- `.husky/.gitkeep`
+- `.vscode/.gitkeep`
+- `app/.gitkeep`
+- `assets/.gitkeep`
+- `config/.gitkeep`
+- `docs/.gitkeep`
+- `generated/.gitkeep`
+- `helper/.gitkeep`
+- `logs/.gitkeep`
+- `middleware/.gitkeep`
+- `prisma/.gitkeep`
+- `scripts/.gitkeep`
+- `tests/.gitkeep`
+- `utils/.gitkeep`
+- `zod/.gitkeep`
+
+Maintenance rule:
+
+- If you add, rename, or repurpose a folder, update that folder's `.gitkeep`.
+- Keep this `README.md` aligned with `.gitkeep` guidance.
+
+## Environment Defaults
+
+Template defaults (`.env`):
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/zenntechinc
+REDIS_ENABLED=false
+JWT_SECRET=change-this-secret
+JWT_EXPIRES_IN=1d
+CORS_ORIGIN=http://localhost:3000
+```
+
+Notes:
+
+- Quoted and unquoted values are both accepted by the template env loader.
+- Keep secrets out of Git in real projects (`.env` should stay local/private).
+
 ## Quick Start
 
 ```bash
@@ -31,11 +93,12 @@ Default environment values are in `.env.example`.
 `npm run dev` uses `nodemon`, so you will see `[nodemon]` logs and auto-restart on file changes.
 Development starts from `app/server.ts`, and production runs from `dist/server.js`.
 Redis is optional and disabled by default (`REDIS_ENABLED=false`).
-MongoDB is required for startup.
+MongoDB is optional by default (`MONGODB_REQUIRED=false`).
 
-## MongoDB Required
+## MongoDB Optional (Sample Mode Enabled)
 
 The app connects using `MONGODB_URI` from `.env`.
+If MongoDB is unavailable and `MONGODB_REQUIRED=false`, the server still starts and auth uses in-memory sample storage.
 
 Default value:
 
@@ -56,6 +119,16 @@ Fix options:
 - Start local MongoDB (`mongod`)
 - Run MongoDB container from the project folder: `docker compose up -d mongo`
 - Use MongoDB Atlas and replace `MONGODB_URI` in `.env`
+- Force strict startup behavior by setting `MONGODB_REQUIRED=true`
+
+### Sample Auth Mode (No MongoDB)
+
+When MongoDB is not connected, auth endpoints use an in-memory sample admin:
+
+- Email: `SAMPLE_ADMIN_EMAIL` (default: `admin@example.com`)
+- Password: `SAMPLE_ADMIN_PASSWORD` (default: `admin123`)
+
+You can override these in `.env` without connecting MongoDB.
 
 ### MongoDB Atlas Setup (Step-by-Step)
 
@@ -80,6 +153,29 @@ Notes:
 
 - URL-encode password special characters before placing them in URI.
 - Use least-privilege DB user permissions for production.
+
+### Atlas IP Whitelist Troubleshooting
+
+If your app uses MongoDB Atlas and your client IP is not whitelisted, connection will fail.
+You may see an error similar to:
+
+```txt
+MongoServerSelectionError: Could not connect to any servers in your MongoDB Atlas cluster
+```
+
+or a message that your IP is not authorized to access the cluster.
+
+Fix:
+
+1. Go to Atlas -> Network Access.
+2. Add your current public IP address (recommended).
+3. Optional (temporary dev only): allow `0.0.0.0/0` to permit access from any IP.
+4. Wait for Atlas rules to apply, then restart the app.
+
+Important:
+
+- Do not keep `0.0.0.0/0` in production.
+- Prefer strict IP allowlists for security.
 
 ## Socket.IO
 
