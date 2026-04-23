@@ -1,0 +1,2 @@
+# Run static checks before each commit.
+npm run lint
