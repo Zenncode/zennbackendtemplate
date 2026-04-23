@@ -1,6 +1,6 @@
 {
   "name": "zenntechinc-cli",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "ZENNTECHINC official CLI for bootstrapping backend API projects",
   "license": "MIT",
   "bin": {
