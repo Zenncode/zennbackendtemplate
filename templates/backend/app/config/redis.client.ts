@@ -19,7 +19,6 @@ function isRedisEnabled(): boolean {
 
 export async function connectRedis(): Promise<void> {
   if (!isRedisEnabled()) {
-    process.stdout.write('Redis cache disabled (REDIS_ENABLED=false)\n');
     return;
   }
 
@@ -49,7 +48,6 @@ export async function connectRedis(): Promise<void> {
     });
 
     redisClient = client;
-    process.stdout.write('Redis cache connected\n');
   } catch (error) {
     client.off('error', suppressConnectErrors);
     process.stderr.write(`Redis unavailable, continuing without cache: ${String(error)}\n`);

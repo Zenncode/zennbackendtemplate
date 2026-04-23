@@ -134,7 +134,6 @@ export function initializeSocketServer(httpServer: HttpServer): SocketServer {
     bindSocketEvents(socket);
   });
 
-  process.stdout.write(`Socket.IO ready on path ${socketPath}\n`);
   return io;
 }
 
