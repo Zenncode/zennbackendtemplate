@@ -1,61 +1,29 @@
-import { Request, Response } from 'express';
-import {
-  UnauthorizedError,
-  loginAdmin,
-  logoutAdmin,
-  refreshAdminSession,
-} from '../services/auth.service';
-import {
-  RequestValidationError,
-  parseLoginAdminDto,
-  parseRefreshAdminDto,
-} from '../types/auth.dto';
+/**
+ * SAMPLE ONLY
+ * This controller file is intentionally comment-only.
+ * Uncomment and adapt if you want to enable auth handlers again.
+ *
+ * Example controller-to-service connection:
+ *
+ * import { Request, Response } from 'express';
+ * import { loginAdmin, refreshAdminSession, logoutAdmin } from '../services/auth.service';
+ *
+ * export async function loginAdminController(req: Request, res: Response): Promise<Response> {
+ *   // 1) Validate request body.
+ *   // 2) Call loginAdmin(dto).
+ *   // 3) Return access/refresh tokens.
+ * }
+ *
+ * export async function refreshAdminController(req: Request, res: Response): Promise<Response> {
+ *   // 1) Read refreshToken from body.
+ *   // 2) Call refreshAdminSession(refreshToken).
+ *   // 3) Return rotated tokens.
+ * }
+ *
+ * export async function logoutAdminController(req: Request, res: Response): Promise<Response> {
+ *   // 1) Read current admin id from req.admin.
+ *   // 2) Call logoutAdmin(adminId).
+ *   // 3) Return success response.
+ * }
+ */
 
-export async function loginAdminController(req: Request, res: Response): Promise<Response> {
-  try {
-    const dto = parseLoginAdminDto(req.body);
-    const result = await loginAdmin(dto);
-    return res.status(200).json(result);
-  } catch (error) {
-    if (error instanceof RequestValidationError) {
-      return res.status(400).json({ message: error.message });
-    }
-
-    if (error instanceof UnauthorizedError) {
-      return res.status(401).json({ message: error.message });
-    }
-
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-}
-
-export async function refreshAdminController(req: Request, res: Response): Promise<Response> {
-  try {
-    const dto = parseRefreshAdminDto(req.body);
-    const result = await refreshAdminSession(dto.refreshToken);
-    return res.status(200).json(result);
-  } catch (error) {
-    if (error instanceof RequestValidationError) {
-      return res.status(400).json({ message: error.message });
-    }
-
-    if (error instanceof UnauthorizedError) {
-      return res.status(401).json({ message: error.message });
-    }
-
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-}
-
-export async function logoutAdminController(req: Request, res: Response): Promise<Response> {
-  try {
-    if (!req.admin?.id) {
-      return res.status(401).json({ message: 'Missing or invalid authorization token' });
-    }
-
-    await logoutAdmin(req.admin.id);
-    return res.status(200).json({ message: 'Logged out successfully' });
-  } catch {
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-}

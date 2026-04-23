@@ -30,21 +30,19 @@ npm run build
 
 ## Run the Generated Backend (Step-by-Step)
 
-From the generated project folder:
+1. Start backend in development:
+```bash
+npm run dev
+```
 
-1. Create `.env` from the example:
+2. Verify it is working:
 
 ```bash
-cp .env.example .env
+curl http://localhost:3000/
+curl http://localhost:3000/api/health
 ```
 
-PowerShell alternative:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-2. Make sure MongoDB is running.
+3. Optional MongoDB setup (only needed when your feature requires DB persistence):
 
 Quick local Docker option:
 
@@ -66,35 +64,21 @@ MONGODB_URI=mongodb+srv://<db-user>:<db-password>@<cluster-url>/zenntechinc?retr
 
 If your database password has special characters, URL-encode it.
 
-3. Start backend in development:
+Note:
+- The generated server attempts MongoDB connection on startup.
+- If MongoDB is unavailable and `MONGODB_REQUIRED=false`, it logs a warning and continues to run.
 
-```bash
-npm run dev
-```
+## Auth and Hooks Scaffold (Default Template State)
 
-4. Verify it is working:
+Generated projects include sample auth scaffolding as commented templates:
 
-```bash
-curl http://localhost:3000/
-curl http://localhost:3000/api/health
-```
+- `app/routes/auth.module.ts`
+- `app/controllers/auth.controller.ts`
+- `app/services/auth.service.ts`
+- `app/common/guards/admin-auth.guard.ts`
+- `app/hooks/auth.hook.ts`
 
-If MongoDB is not running, startup will fail with connection errors.
-If you use another Mongo host, set `MONGODB_URI` in `.env`.
-
-Optional first admin auto-seed:
-
-```env
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=admin123
-```
-
-Production run:
-
-```bash
-npm run build
-npm start
-```
+These files document connection flow only and do not register active auth endpoints by default.
 
 ## Generated Backend Stack
 
@@ -104,7 +88,8 @@ Each generated backend project includes:
 - Express.js API
 - Socket.IO realtime support
 - MongoDB + Mongoose
-- JWT auth + bcrypt password hashing
+- JWT + bcrypt dependencies ready for auth implementation
+- Commented auth scaffolds (route/controller/service/guard/hook)
 - Optional Redis caching
 - Jest + Supertest tests
 - ESLint + Prettier setup
