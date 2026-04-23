@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const minimist = require('minimist');
 
 const pkg = require('../package.json');
 const templateRoot = path.join(__dirname, '..', 'templates', 'backend');
@@ -208,23 +209,29 @@ function createProject(projectName, options) {
 }
 
 function main() {
-  const args = process.argv.slice(2);
-  const command = args[0];
+  const argv = minimist(process.argv.slice(2), {
+    boolean: ['help', 'version', 'skip-install'],
+    alias: {
+      h: 'help',
+      v: 'version',
+      s: 'skip-install',
+    },
+  });
+  const [command, projectName] = argv._;
 
-  if (!command || command === '--help' || command === '-h') {
-    printHelp();
-    return;
-  }
-
-  if (command === '--version' || command === '-v') {
+  if (argv.version) {
     console.log(pkg.version);
     return;
   }
 
+  if (argv.help || !command) {
+    printHelp();
+    return;
+  }
+
   if (command === 'new') {
-    const projectName = args[1];
     const options = {
-      skipInstall: args.includes('--skip-install') || args.includes('-s'),
+      skipInstall: Boolean(argv['skip-install']),
     };
 
     if (!projectName) {
