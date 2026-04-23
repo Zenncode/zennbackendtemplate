@@ -5,7 +5,6 @@ import mongoose from 'mongoose';
 import { createApp } from './app.module';
 import { connectRedis, disconnectRedis } from './config/redis.client';
 import { closeSocketServer, initializeSocketServer } from './socket/socket.server';
-import { seedAdminFromEnv } from './services/auth.service';
 
 let httpServer: Server | null = null;
 
@@ -202,7 +201,6 @@ async function bootstrap() {
 
   await connectMongoIfAvailable();
   await connectRedis();
-  await seedAdminFromEnv();
 
   const app = createApp();
   const preferredPort = Number(process.env.PORT ?? '3000');
