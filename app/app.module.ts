@@ -1,6 +1,4 @@
 import express from 'express';
-import { adminAuthGuard } from './common/guards/admin-auth.guard';
-import { authRouter } from './routes/auth.module';
 import { getCache, setCache } from './services/cache.service';
 
 type HealthResponse = {
@@ -65,13 +63,6 @@ export function createApp() {
 
     await setCache(healthCacheKey, payload, healthTtlSeconds);
     res.status(200).json(payload);
-  });
-
-  app.use('/api/auth/admin', authRouter);
-
-  app.use('/api', adminAuthGuard);
-  app.get('/api/admin/me', (req, res) => {
-    res.status(200).json({ admin: req.admin ?? null });
   });
 
   app.use((_req, res) => {
