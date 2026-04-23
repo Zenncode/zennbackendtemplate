@@ -1,7 +1,6 @@
 node_modules
 dist
 coverage
-.env
 assets/uploads/*
 !assets/uploads/.gitkeep
 logs/*
@@ -12,3 +11,4 @@ yarn-error.log*
 pnpm-debug.log*
 _tmp_cli_test*
 .npmrc.authcheck
+config.bat
