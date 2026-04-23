@@ -111,7 +111,6 @@ async function connectMongoIfAvailable(): Promise<void> {
     await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: connectTimeoutMs,
     });
-    process.stdout.write('MongoDB connected\n');
   } catch (error) {
     const formattedError = formatMongoConnectionError(error, mongoUri);
     if (isMongoRequired()) {
